@@ -4,9 +4,11 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <iterator>
 #include "external/linenoise.hpp"
 
 #include "token.hpp"
+#include "environment.hpp"
 
 #define TOKEN_LIST true
 #define BACK_TWO -2
@@ -19,11 +21,6 @@ struct Input {
 template <typename T>
 auto create_token(T value) {
   return token::Token(value);
-}
-
-auto print() {
-  std::cout << "risp> ";
-  return true;
 }
 
 auto read() {
@@ -76,26 +73,50 @@ token::Token parse_tokens(std::stringstream& tokens) {
   }
 }
 
-void print_token(token::Token& token) {
-  if (token.is_list) {
-    std::cout << "New list:\n";
-    std::for_each(begin(token.list), end(token.list),
-		  [](auto a_token) { print_token(a_token); });
-    std::cout << "End list:\n";
-  } else {
-    std::cout << token.value << " -- " << get_type(token) << std::endl;
-  }
-}
-
-auto parse(std::stringstream& tokens) {
+auto parse(std::string input) {
+  auto tokens = tokenize(input);
   token::Token parsed_tokens = parse_tokens(tokens);
   return parsed_tokens;
 }
 
-auto eval(std::string& input) {
-  auto tokens = tokenize(input);
-  auto parsed_tokens = parse(tokens);
-  print_token(parsed_tokens);
+token::Token eval_token(token::Token& token, const Library* libarary) {
+  if (token.type == token::TokenType::LIST) {
+    auto tokens = std::begin(token.list);
+    auto function_name = tokens->value;
+    auto library_entry = library->find(function_name);
+    if (library_entry != library->end()) {
+      auto function_args = std::vector<token::Token>();
+      auto function = library_entry->second;
+      tokens++;
+      std::transform(tokens, std::end(token.list), 
+		     std::back_inserter(function_args),
+		     [&function_name](auto arg) {
+		       return function_name == "define" ?
+			 arg :
+			 eval_token(arg, library);
+		     });
+      return function(function_args);
+    } else {
+      auto result = std::vector<token::Token>();
+      std::transform(std::begin(token.list), std::end(token.list),
+		     std::back_inserter(result), [] (auto token_to_eval) {
+		       return eval_token(token_to_eval, library);
+		     });
+      return result.back();
+    }
+  } else if (token.type == token::TokenType::IDENTIFIER) {
+    return user_value->find(token.value)->second;
+  } else {
+    return token;
+  }
+}
+
+auto eval(const std::string& input) {
+  auto parsed_tokens = parse(input);
+  //token::print_token(parsed_tokens);
+  auto result = eval_token(parsed_tokens, library);
+  std::cout << "Evaled: ";
+  token::print_token(result);
   return 7;
 }
 
