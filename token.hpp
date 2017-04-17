@@ -8,7 +8,7 @@
 #define NEVER_PRINT "__RISP_THIS_SHOULD_NEVER_PRINT__"
 
 namespace token {
-  const auto number_regex = std::regex("^[[:digit:]]+$");
+  const auto number_regex = std::regex("^[[:digit:]]+(\\.[[:digit:]]+)?$");
   const auto string_regex = std::regex("\".*\"");
 
   enum TokenType { UNDEFINED, LIST, NUMBER, LITERAL, IDENTIFIER };
