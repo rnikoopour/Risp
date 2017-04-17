@@ -1,5 +1,6 @@
 #include <sstream>
 #include <string>
+#include <stdexcept>
 #include "token.hpp"
 
 #define Library std::map<std::string, std::function<token::Token(std::vector<token::Token>&)>>
@@ -42,7 +43,9 @@ auto library = new Library({
       iterator++;
       try {
 	const auto total = std::accumulate(iterator, std::end(token_list), start_value, 
-					   [](auto acc, auto token) { return acc / stod(token.value); });
+					   [](auto acc, auto token) { 
+					     return acc / stod(token.value); 
+					   });
 	std::stringstream total_str;
 	total_str << total;
 	return token::Token(StreamToString(total_str));
@@ -51,17 +54,17 @@ auto library = new Library({
       }
     }},
   {"define", [](auto& token_list) {
-      auto define_state = DEFINE_START;
-      std::accumulate(std::begin(token_list), std::end(token_list), std::string(define_state),
-		      [](auto acc, auto token) {
-			if (acc == DEFINE_START) {
-			  return token.value;
-			} else {
-			  std::cout << "Adding key: " << acc << std::endl;
-			  user_value->insert(NewDefinition(acc, token));
-			  return std::string(DEFINE_START);
-			}
-		      });
+      auto define_state = std::accumulate(std::begin(token_list), std::end(token_list), std::string(DEFINE_START),
+					  [](auto acc, auto token) {
+					    if (acc == DEFINE_START) {
+					      return token.value;
+					    } else {
+					      user_value->insert(NewDefinition(acc, token));
+					      return std::string(DEFINE_START);
+					    }
+					  });
+      // We should end in the DEFINE_STATE, otherwise
+      //  the define statement wasn't properly formatted
       if (define_state == DEFINE_START) {
 	return token_list.back();
       } else {

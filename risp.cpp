@@ -35,6 +35,7 @@ auto normalize(std::string& input) {
 }
 
 auto tokenize(std::string& input) {
+  std::cout << normalize(input) << std::endl;
   return std::stringstream(normalize(input));
 }
 
@@ -128,7 +129,6 @@ int main(int argc, char* argv[]) {
   
   while(true) {
     auto input = read();
-    std::cout << "here\n";
     if (input.should_exit) break;
     eval(input.input);
     linenoise::AddHistory(input.input.c_str());
