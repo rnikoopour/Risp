@@ -35,7 +35,6 @@ auto normalize(std::string& input) {
 }
 
 auto tokenize(std::string& input) {
-  std::cout << normalize(input) << std::endl;
   return std::stringstream(normalize(input));
 }
 

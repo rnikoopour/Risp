@@ -8,14 +8,16 @@
 #define NEVER_PRINT "__RISP_THIS_SHOULD_NEVER_PRINT__"
 
 namespace token {
-  const auto number_regex = std::regex("^[[:digit:]]+(\\.[[:digit:]]+)?$");
+  const auto integer_regex = std::regex("^[[:digit:]]+$");
+  const auto float_regex = std::regex("^[[:digit:]]+\\.[[:digit:]]+$");  
   const auto string_regex = std::regex("\".*\"");
 
-  enum TokenType { UNDEFINED, LIST, NUMBER, LITERAL, IDENTIFIER };
+  enum TokenType { UNDEFINED, LIST, INTEGER, FLOAT, LITERAL, IDENTIFIER };
   const auto token_types = std::map<TokenType, std::string> {
     {TokenType::UNDEFINED, "UNDEFINED"},
     {TokenType::LIST, "LIST"},
-    {TokenType::NUMBER, "NUMBER"},
+    {TokenType::INTEGER, "INTEGER"},
+    {TokenType::FLOAT, "FLOAT"},
     {TokenType::LITERAL, "LITERAL"},
     {TokenType::IDENTIFIER, "IDENTIFIER"}
   };
@@ -28,8 +30,10 @@ namespace token {
     Token(std::string val) : value(val), type(discover_type(val)){};
     Token(bool is_a_list) : is_list(is_a_list), type(TokenType::LIST)  {};
     TokenType discover_type(std::string& value) {
-      if (std::regex_match(value, number_regex))
-	return TokenType::NUMBER;
+      if (std::regex_match(value, integer_regex))
+	return TokenType::INTEGER;
+      else if (std::regex_match(value, float_regex))
+	return TokenType::FLOAT;
       else if (std::regex_match(value, string_regex))
 	return TokenType::LITERAL;
       else
