@@ -1,6 +1,10 @@
+#ifndef ENVIRONMENT
+#define ENVIRONMENT
+
 #include <sstream>
 #include <string>
 #include <stdexcept>
+#include <map>
 #include "token.hpp"
 
 #define Library std::map<std::string, std::function<token::Token(std::vector<token::Token>&)>>
@@ -77,3 +81,4 @@ namespace env {
   struct Environment {
   };
 }
+#endif

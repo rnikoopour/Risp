@@ -7,7 +7,6 @@
 #include <iterator>
 #include "external/linenoise.hpp"
 
-#include "token.hpp"
 #include "environment.hpp"
 
 #define TOKEN_LIST true
