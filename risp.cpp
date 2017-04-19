@@ -12,6 +12,10 @@
 #define TOKEN_LIST true
 #define BACK_TWO -2
 
+#ifndef EVAL_TOKEN_FUNCTION
+#define EVAL_TOKEN_FUNCTION std::function<token::Token(token::Token&, const Library*)>
+#endif
+
 struct Input {
   std::string input;
   bool should_exit;
@@ -78,31 +82,38 @@ auto parse(std::string input) {
   return parsed_tokens;
 }
 
-token::Token eval_token(token::Token& token, const Library* libarary) {
+auto eval_list(token::Token& token, const Library* library, EVAL_TOKEN_FUNCTION eval_token) {
+  auto tokens = std::begin(token.list);
+  auto function_name = tokens->value;
+  auto library_entry = library->find(function_name);
+
+  if (library_entry != library->end()) {
+    auto function_args = std::vector<token::Token>();
+    auto function = library_entry->second;
+    tokens++;
+    std::transform(tokens, std::end(token.list), 
+		   std::back_inserter(function_args),
+		   [&function_name, &eval_token, &library](auto arg) {
+		     return function_name == "define" || function_name == "lambda" ?
+		       arg :
+		       eval_token(arg, library);
+		   });
+    return function(function_args);
+  } else {
+    auto result = std::vector<token::Token>();
+    std::transform(std::begin(token.list), std::end(token.list),
+		   std::back_inserter(result), [&eval_token, &library] (auto token_to_eval) {
+		     return eval_token(token_to_eval, library);
+		   });
+    return result.back();
+  }
+}
+
+
+
+token::Token eval_token(token::Token& token, const Library* library) {
   if (token.type == token::TokenType::LIST) {
-    auto tokens = std::begin(token.list);
-    auto function_name = tokens->value;
-    auto library_entry = library->find(function_name);
-    if (library_entry != library->end()) {
-      auto function_args = std::vector<token::Token>();
-      auto function = library_entry->second;
-      tokens++;
-      std::transform(tokens, std::end(token.list), 
-		     std::back_inserter(function_args),
-		     [&function_name](auto arg) {
-		       return function_name == "define" ?
-			 arg :
-			 eval_token(arg, library);
-		     });
-      return function(function_args);
-    } else {
-      auto result = std::vector<token::Token>();
-      std::transform(std::begin(token.list), std::end(token.list),
-		     std::back_inserter(result), [] (auto token_to_eval) {
-		       return eval_token(token_to_eval, library);
-		     });
-      return result.back();
-    }
+    return eval_list(token, library, eval_token);
   } else if (token.type == token::TokenType::IDENTIFIER) {
     return user_value->find(token.value)->second;
   } else {

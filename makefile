@@ -1,7 +1,7 @@
-risp: risp.o token.o environment.hpp
+risp: risp.o token.o 
 	clang++ -o risp risp.o token.o
 
-risp.o: risp.cpp
+risp.o: risp.cpp environment.hpp
 	clang++ -std=c++1z -Wall -pedantic -c risp.cpp 
 
 token.o: token.hpp token.cpp

@@ -1,6 +1,5 @@
 #ifndef TOKEN
 #define TOKEN
-#define NEVER_PRINT "__RISP_THIS_SHOULD_NEVER_PRINT__"
 
 #include <iostream>
 #include <string>
@@ -25,7 +24,7 @@ void token::print_token(Token& token) {
     }
   }
 
-token::TokenType token::Token::discover_type(std::string& value) {
+token::TokenType token::discover_type(std::string& value) {
     if (std::regex_match(value, integer_regex))
       return TokenType::INTEGER;
     else if (std::regex_match(value, float_regex))
