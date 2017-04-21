@@ -1,13 +1,13 @@
 risp: token.o parser.o risp.o
-	clang++ -o risp token.o parser.o risp.o
+	clang++ -std=c++1z -o risp token.o parser.o risp.o
 
-token.o: token.hpp token.cpp
+token.o: token.cpp token.hpp
 	clang++ -std=c++1z -Wall -pedantic -c token.cpp 
 
-parser.o: parser.hpp parser.cpp
-	clang++ -std=c++1z -Wall -pedantic -c parser.cpp 
+parser.o: parser.cpp parser.hpp token.hpp
+	clang++ -std=c++1z -Wall -pedantic -c parser.cpp
 
-risp.o: risp.cpp environment.hpp parser.hpp
+risp.o: risp.cpp token.hpp parser.hpp
 	clang++ -std=c++1z -Wall -pedantic -c risp.cpp 
 
 clean:
