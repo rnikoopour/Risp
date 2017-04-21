@@ -7,10 +7,9 @@
 #include <iterator>
 #include "external/linenoise.hpp"
 
+#include "token.hpp"
+#include "parser.hpp"
 #include "environment.hpp"
-
-#define TOKEN_LIST true
-#define BACK_TWO -2
 
 #ifndef EVAL_TOKEN_FUNCTION
 #define EVAL_TOKEN_FUNCTION std::function<token::Token(token::Token&, const Library*)>
@@ -21,65 +20,10 @@ struct Input {
   bool should_exit;
 };
 
-template <typename T>
-auto create_token(T value) {
-  return token::Token(value);
-}
-
 auto read() {
   std::string input;
   auto should_exit = linenoise::Readline("risp> ", input);
   return Input{input, should_exit};
-}
-
-auto normalize(std::string& input) {
-  auto parens_regex = std::regex("\\)|\\(");
-  return std::regex_replace(input, parens_regex, " $& ");
-}
-
-auto tokenize(std::string& input) {
-  return std::stringstream(normalize(input));
-}
-
-token::Token parse_tokens(std::stringstream& tokens) {
-  std::string token_str;
-  auto token_list = create_token(TOKEN_LIST);
-  tokens >> token_str;
-  if (token_str == "(") {
-    auto close_paren_found = false;
-    while (tokens >> token_str) {
-      if (token_str == ")") {
-	close_paren_found = true;
-      } else if (token_str == "(") {
-	tokens << "( ";
-	tokens.seekg(BACK_TWO, tokens.cur);
-	token_list.list.push_back(parse_tokens(tokens));
-      } else {
-	token_list.list.push_back(create_token(token_str));
-      }
-      if (close_paren_found)
-	return token_list;
-    }
-    std::cout << "Missing \")\": " << tokens.str() << "\"\n";
-    // Can't return token_list because it may
-    //  have been modified
-    return token::Token(create_token(TOKEN_LIST));
-  } else {
-    if (tokens >> token_str) {
-      std::cout << "S-expression require (): \"" << tokens.str() << "\"\n";
-    } else {
-      token_list.list.push_back(create_token(token_str));
-    }
-    // Can safely return token_list because it will
-    //  either be empty of have one token it
-    return token_list;
-  }
-}
-
-auto parse(std::string input) {
-  auto tokens = tokenize(input);
-  token::Token parsed_tokens = parse_tokens(tokens);
-  return parsed_tokens;
 }
 
 auto eval_list(token::Token& token, const Library* library, EVAL_TOKEN_FUNCTION eval_token) {
@@ -109,8 +53,6 @@ auto eval_list(token::Token& token, const Library* library, EVAL_TOKEN_FUNCTION 
   }
 }
 
-
-
 token::Token eval_token(token::Token& token, const Library* library) {
   if (token.type == token::TokenType::LIST) {
     return eval_list(token, library, eval_token);
@@ -122,7 +64,7 @@ token::Token eval_token(token::Token& token, const Library* library) {
 }
 
 auto eval(const std::string& input) {
-  auto parsed_tokens = parse(input);
+  auto parsed_tokens = parser::parse(input);
   //token::print_token(parsed_tokens);
   auto result = eval_token(parsed_tokens, library);
   std::cout << "Evaled: ";

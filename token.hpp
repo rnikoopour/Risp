@@ -1,5 +1,7 @@
-#ifndef TOKEN_HEADER
-#define TOKEN_HEADER
+#include <map>
+
+#ifndef TOKEN_HPP
+#define TOKEN_HPP
 #define NEVER_PRINT "__RISP_THIS_SHOULD_NEVER_PRINT__"
 
 namespace token {
@@ -16,17 +18,17 @@ namespace token {
     {TokenType::LITERAL, "LITERAL"},
     {TokenType::IDENTIFIER, "IDENTIFIER"}
   };
-  TokenType discover_type(std::string& value);
+  TokenType discover_type(const std::string& value);
 
   struct Token {
     const std::string value = NEVER_PRINT;
     const bool is_list = false;
-    std::vector<Token> list;
     const TokenType type = UNDEFINED;
+    std::vector<Token> list;
     Token(std::string val) : value(val), type(discover_type(val)){};
     Token(bool is_a_list) : is_list(is_a_list), type(TokenType::LIST)  {};
   };
-  auto get_type(Token token);
-  void print_token(Token& token);
+  auto get_type(const Token& token);
+  void print_token(const Token& token);
 }
 #endif
