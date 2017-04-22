@@ -1,10 +1,12 @@
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include "external/linenoise.hpp"
 
 #include "token.hpp"
 #include "parser.hpp"
+#include "eval.hpp"
 
 struct Input {
   std::string input;
@@ -20,7 +22,7 @@ auto read() {
 
 auto eval(const std::string& input) {
   auto parsed_tokens = parser::parse(input);
-  token::print_token(parsed_tokens);
+  token::print_token(risp_eval::eval(parsed_tokens));
 }
 
 int main(int argc, char* argv[]) {
