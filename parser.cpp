@@ -1,13 +1,6 @@
 #ifndef PARSER
 #define PARSER
 
-#include <iostream>
-#include <memory>
-#include <regex>
-#include <sstream>
-#include <string>
-
-#include "token.hpp"
 #include "parser.hpp"
 
 #define TOKEN_LIST true
@@ -47,11 +40,11 @@ namespace parser {
       std::cout << "Missing \")\": " << tokens.str() << "\"\n";
       // Can't return token_list because it may
       //  have been modified
-      return token::create_token(TOKEN_LIST);
+      return token::create_token("Missing \")\": " + tokens.str());
     } else {
       if (tokens >> token_str) {
 	std::cout << "S-expression require (): \"" << tokens.str() << "\"\n";
-	return token::create_token(TOKEN_LIST);
+	return token::create_token("S-expression require (): \"" + tokens.str());
       } else {
 	token_list->list.push_back(token::create_token(token_str));
       }

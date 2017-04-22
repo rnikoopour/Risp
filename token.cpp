@@ -1,18 +1,10 @@
 #ifndef TOKEN
 #define TOKEN
 
-#include <algorithm>
-#include <iostream>
-#include <map>
-#include <memory>
-#include <regex>
-#include <string>
-#include <vector>
-
 #include "token.hpp"
 
 namespace token {
-  const auto integer_regex = std::regex("^[[:digit:]]+(\\.0+)?$");
+  const auto integer_regex = std::regex("^[[:digit:]]+$");
   const auto float_regex = std::regex("^[[:digit:]]+\\.[[:digit:]]+$");  
   const auto string_regex = std::regex("\".*\"");
   const auto token_types = std::map<TokenType, std::string> {
@@ -20,7 +12,7 @@ namespace token {
     {TokenType::LIST, "LIST"},
     {TokenType::INTEGER, "INTEGER"},
     {TokenType::FLOAT, "FLOAT"},
-    {TokenType::LITERAL, "LITERAL"},
+    {TokenType::STRING, "STRING"},
     {TokenType::IDENTIFIER, "IDENTIFIER"},
     {TokenType::LAMBDA, "LAMBDA"}
   };
@@ -41,18 +33,19 @@ namespace token {
   }
 
   TokenType discover_type(const std::string& value) {
-    if (std::regex_match(value, integer_regex))
+    if (std::regex_match(value, integer_regex)) {
+      //std::cout << "INTEGER\n";
       return TokenType::INTEGER;
-    else if (std::regex_match(value, float_regex))
+    } else if (std::regex_match(value, float_regex)) {
+      //std::cout << "FLOAT\n";
       return TokenType::FLOAT;
-    else if (std::regex_match(value, string_regex))
-      return TokenType::LITERAL;
-    else
+    } else if (std::regex_match(value, string_regex)) {
+      //std::cout << value << "    STRING\n";
+      return TokenType::STRING;
+    } else {
+      //std::cout << "IDENTIFIER\n";
       return TokenType::IDENTIFIER;
+    }
   }
 }
-
-
-
-
 #endif
