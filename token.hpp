@@ -21,10 +21,10 @@ namespace token {
     const bool is_list = false;
     const TokenType type = UNDEFINED;
     std::vector<std::unique_ptr<Token>> list;
-    Token(const std::string val) : value(val), type(discover_type(val)) {};
-    Token(const char* val) : value(std::string(val)), type(discover_type(val)) {};
-    Token(const bool is_a_list) : is_list(is_a_list), type(TokenType::LIST) {/*std::cout << "list\n";*/};
-    ~Token() { /*std::cout << "deleted\n";*/ };
+    Token(const std::string val);
+    Token(const char* val);
+    Token(const bool is_a_list);
+    ~Token();
   };
 
   template <typename T>

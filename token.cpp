@@ -4,6 +4,11 @@
 #include "token.hpp"
 
 namespace token {
+  Token::Token(const std::string val) : value(val), type(discover_type(val)) {};
+  Token::Token(const char* val) : value(std::string(val)), type(discover_type(val)) {};
+  Token::Token(const bool is_a_list) : is_list(is_a_list), type(TokenType::LIST) {/*std::cout << "list\n";*/};
+  Token::~Token() { /*std::cout << "deleted\n";*/ };
+  
   const auto integer_regex = std::regex("^-?[[:digit:]]+$");
   const auto float_regex = std::regex("^-?[[:digit:]]+\\.[[:digit:]]+$");  
   const auto string_regex = std::regex("\".*\"");
