@@ -4,8 +4,8 @@
 #include "token.hpp"
 
 namespace token {
-  const auto integer_regex = std::regex("^[[:digit:]]+$");
-  const auto float_regex = std::regex("^[[:digit:]]+\\.[[:digit:]]+$");  
+  const auto integer_regex = std::regex("^-?[[:digit:]]+$");
+  const auto float_regex = std::regex("^-?[[:digit:]]+\\.[[:digit:]]+$");  
   const auto string_regex = std::regex("\".*\"");
   const auto token_types = std::map<TokenType, std::string> {
     {TokenType::UNDEFINED, "UNDEFINED"},
