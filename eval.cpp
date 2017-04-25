@@ -3,61 +3,123 @@
 #include "eval.hpp"
 
 namespace risp_eval {
-  typedef std::function<token::UniqueTokenPointer(const std::vector<token::UniqueTokenPointer>&)> LibraryFunc;
+  typedef std::function<token::UniqueTokenPointer(const std::vector<token::UniqueTokenPointer>&&)> LibraryFunc;
 
-
-  auto add_ints(const std::vector<token::UniqueTokenPointer>& args) {
+  auto add_tokens(const std::vector<token::UniqueTokenPointer>&& args) {
     try {
-      const auto result = std::accumulate(std::begin(args), std::end(args), 0,
-					 [](auto acc, auto& token) {
-					    return acc + std::stoi(token->value);
+      auto result = std::accumulate(std::begin(args), std::end(args), token::create_token("0"),
+					 [](auto&& acc, auto&& token) {
+					    if (acc->type == token::TokenType::FLOAT ||
+						token->type == token::TokenType::FLOAT) {
+					      const auto result = std::stod(acc->value) + std::stod(token->value);
+					      return std::move(token::create_token(std::to_string(result)));
+					    }
+					    else {
+					      const auto result = std::stoi(acc->value) + std::stoi(token->value);
+					      return std::move(token::create_token(std::to_string(result)));
+					    }
 					 });
-      return token::create_token(std::to_string(result));
+      return result;
     } catch (std::exception e) {
-      return token::create_token("Can only add same typed value");
+      return token::create_token("Can only add numbers");
     }
   }
 
-  auto add_floats(const std::vector<token::UniqueTokenPointer>& args) {
+  auto multiply_tokens(const std::vector<token::UniqueTokenPointer>&& args) {
     try {
-      const auto result = std::accumulate(std::begin(args), std::end(args), 0.0,
-					 [](auto acc, auto& token) {
-					    return acc + std::stod(token->value);
+      auto result = std::accumulate(std::begin(args), std::end(args), token::create_token("1"),
+					 [](auto&& acc, auto&& token) {
+					    if (acc->type == token::TokenType::FLOAT ||
+						token->type == token::TokenType::FLOAT) {
+					      const auto result = std::stod(acc->value) * std::stod(token->value);
+					      return std::move(token::create_token(std::to_string(result)));
+					    }
+					    else {
+					      const auto result = std::stoi(acc->value) * std::stoi(token->value);
+					      return std::move(token::create_token(std::to_string(result)));
+					    }
 					 });
-      return token::create_token(std::to_string(result));
+      return result;
     } catch (std::exception e) {
-      return token::create_token("Can only add same typed value");
+      return token::create_token("Can only multiple numbers");
     }
   }
 
-  auto add_tokens(const std::vector<token::UniqueTokenPointer>& args) {
-    auto add_args = [&]() {
-      switch(args[0]->type) {
-      case token::TokenType::INTEGER:
-      return add_ints(args);
-      case token::TokenType::FLOAT:
-      return add_floats(args);
+  auto subtract_tokens(const std::vector<token::UniqueTokenPointer>&& args) {
+    if (args.size() == 1) {
+      if (args[0]->type == token::TokenType::FLOAT) {
+	const auto value = std::stod(args[0]->value);
+	return token::create_token(std::to_string(value * -1));
+      } else {
+	const auto value = std::stoi(args[0]->value);
+	return token::create_token(std::to_string(value * -1));
       }
-    };
-    return add_args();
+    } else {
+      try {
+	const auto start = std::begin(args);
+	auto result = std::accumulate(std::next(start), std::end(args), token::create_token((*start)->value),
+				      [](auto&& acc, auto&& token) {
+					if (acc->type == token::TokenType::FLOAT ||
+					    token->type == token::TokenType::FLOAT) {
+					  const auto result = std::stod(acc->value) - std::stod(token->value);
+					  return std::move(token::create_token(std::to_string(result)));
+					}
+					else {
+					  const auto result = std::stoi(acc->value) - std::stoi(token->value);
+					  return std::move(token::create_token(std::to_string(result)));
+					}
+				      });
+	return result;
+      } catch (std::exception e) {
+	return token::create_token("Can only subtract numbers");
+      }
+    }
+  }
+
+  auto divide_tokens(const std::vector<token::UniqueTokenPointer>&& args) {
+    if (args.size() == 1) {
+      const auto value = std::stod(args[0]->value);
+      return token::create_token(std::to_string(1 / value));
+    } else {
+      try {
+	const auto start = std::begin(args);
+	auto result = std::accumulate(std::next(start), std::end(args), token::create_token((*start)->value),
+				      [](auto&& acc, auto&& token) {
+					const auto result = std::stod(acc->value) / std::stod(token->value);
+					return std::move(token::create_token(std::to_string(result)));
+				      });
+	return result;
+      } catch (std::exception e) {
+	return token::create_token("Can only divide numbers");
+      }
+    }
   }
 
   std::map<std::string, LibraryFunc> Library = {
-    {"+", [](const auto& args) {
-	return add_tokens(args);
+    {"+", [](const auto&& args) {
+	return std::move(add_tokens(std::move(args)));
+      }},
+    {"-", [](const auto&& args) {
+	return std::move(subtract_tokens(std::move(args)));
+      }},
+    {"*", [](const auto&& args) {
+	return std::move(multiply_tokens(std::move(args)));
+      }},
+    {"/", [](const auto&& args) {
+	return std::move(divide_tokens(std::move(args)));
       }}
   };
 
-  auto eval_token_list(token::UniqueTokenPointer& token) {
+  auto eval_token_list(token::UniqueTokenPointer&& token) {
     auto resolved_tokens = std::vector<token::UniqueTokenPointer>();
     std::transform(std::begin(token->list), std::end(token->list),
-		   std::back_inserter(resolved_tokens),[] (auto& a_token) {
-		     return eval(a_token);
+		   std::back_inserter(resolved_tokens),[] (auto&& a_token) {
+		     return eval(std::move(a_token));
 		   });
     if (resolved_tokens[0]->type == token::TokenType::IDENTIFIER) {
       const auto op = std::move(resolved_tokens[0]);
       resolved_tokens.erase(resolved_tokens.begin());
-      return Library.find(op->value)->second(resolved_tokens);
+      return Library.find(op->value)->second(std::move(resolved_tokens));
     }
     return token::create_token("BAD LIST");
 
@@ -67,10 +129,10 @@ namespace risp_eval {
     return std::move(token);
   }
 
-  token::UniqueTokenPointer eval(token::UniqueTokenPointer& token) {
+  token::UniqueTokenPointer eval(token::UniqueTokenPointer&& token) {
     switch(token->type) {
     case token::TokenType::LIST:
-      return eval_token_list(token);
+      return eval_token_list(std::move(token));
     case token::TokenType::INTEGER:
     case token::TokenType::FLOAT:
     case token::TokenType::STRING:
