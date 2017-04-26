@@ -3,7 +3,7 @@
 #include "eval.hpp"
 
 namespace risp_eval {
-  typedef std::function<token::UniqueTokenPointer(std::vector<token::UniqueTokenPointer>)> LibraryFunc;
+  typedef std::function<token::UniqueTokenPointer(token::UniqueTokenPointer)> LibraryFunc;
 
   auto add_tokens(std::vector<token::UniqueTokenPointer> args) {
     try {
@@ -95,33 +95,43 @@ namespace risp_eval {
     }
   }
 
-  std::map<std::string, LibraryFunc> Library = {
-    {"+", [](auto args) {
-	return add_tokens(std::move(args));
-      }},
-    {"-", [](auto args) {
-	return subtract_tokens(std::move(args));
-      }},
-    {"*", [](auto args) {
-	return multiply_tokens(std::move(args));
-      }},
-    {"/", [](auto args) {
-	return divide_tokens(std::move(args));
-	}}
-  };
-
-  auto eval_token_list(token::UniqueTokenPointer token) {
+  template <class T>
+  auto resolve_token_list_then_apply(token::UniqueTokenPointer token_list, T function) {
     auto resolved_tokens = std::vector<token::UniqueTokenPointer>();
-    std::transform(std::begin(token->list), std::end(token->list),
+    std::transform(std::begin(token_list->list), std::end(token_list->list),
 		   std::back_inserter(resolved_tokens),[] (auto& a_token) {
 		     return eval(std::move(a_token));
 		   });
-    if (resolved_tokens[0]->type == token::TokenType::IDENTIFIER) {
-      const auto op = std::move(resolved_tokens[0]);
-      resolved_tokens.erase(resolved_tokens.begin());
-      return Library.find(op->value)->second(std::move(resolved_tokens));
+    return function(std::move(resolved_tokens));
+  }
+  
+  std::map<std::string, LibraryFunc> Library = {
+    {"+", [](auto args) {
+	return resolve_token_list_then_apply(std::move(args), add_tokens);
+      }},
+
+    {"-", [](auto args) {
+	return resolve_token_list_then_apply(std::move(args), subtract_tokens);
+      }},
+    {"*", [](auto args) {
+	return resolve_token_list_then_apply(std::move(args), multiply_tokens);
+      }},
+    {"/", [](auto args) {
+	return resolve_token_list_then_apply(std::move(args), divide_tokens);
+      }},
+    {"let", [](auto args) {
+	token::print_token(args->list[0]);
+	return token::create_token("let");
+	}}
+  };
+
+  auto eval_token_list(token::UniqueTokenPointer token_list) {
+    auto op = std::move(token_list->list[0]);
+    token_list->list.erase(token_list->list.begin());
+    if (op->type == token::TokenType::IDENTIFIER) {
+      return Library.find(op->value)->second(std::move(token_list));
     }
-    return token::create_token("BAD LIST");
+    return op;
   }
 
   auto eval_token_general(token::UniqueTokenPointer token) {
