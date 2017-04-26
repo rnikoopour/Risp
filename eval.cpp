@@ -143,6 +143,10 @@ namespace risp_eval {
     return first_token;
   }
 
+  auto eval_token_identifier(token::UniqueTokenPointer token,  scope::UniqueScopePointer scope) {
+    return scope::search_scope(scope, token->value);
+  }
+  
   auto eval_token_general(token::UniqueTokenPointer token,  scope::UniqueScopePointer scope) {
     return token;
   }
@@ -151,11 +155,12 @@ namespace risp_eval {
     switch(token->type) {
     case token::TokenType::LIST:
       return eval_token_list(std::move(token), scope::create_scope());
+    case token::TokenType::IDENTIFIER:
+      return eval_token_identifier(std::move(token), scope::create_scope());
     case token::TokenType::INTEGER:
     case token::TokenType::FLOAT:
     case token::TokenType::STRING:
-    case token::TokenType::IDENTIFIER:
-      return eval_token_general(std::move(token), scope::create_scope());
+        return eval_token_general(std::move(token), scope::create_scope());
     }
   }
 }
