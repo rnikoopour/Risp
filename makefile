@@ -1,8 +1,11 @@
-risp: token.o parser.o eval.o risp.o
-	clang++ -std=c++1z -o risp token.o parser.o eval.o risp.o
+risp: token.o scope.o parser.o eval.o risp.o
+	clang++ -std=c++1z -o risp token.o scope.o parser.o eval.o risp.o
 
 token.o: token.cpp token.hpp
 	clang++ -std=c++1z -Wall -pedantic -c token.cpp 
+
+scope.o: scope.cpp scope.hpp
+	clang++ -std=c++1z -Wall -pedantic -c scope.cpp 
 
 parser.o: parser.cpp parser.hpp token.hpp
 	clang++ -std=c++1z -Wall -pedantic -c parser.cpp

@@ -1,9 +1,12 @@
 #ifndef EVAL
 #define EVAL
+
 #include "eval.hpp"
+#include "scope.hpp"
 
 namespace risp_eval {
   typedef std::function<token::UniqueTokenPointer(token::UniqueTokenPointer)> LibraryFunc;
+  typedef std::map<std::string, LibraryFunc> StandardLibrary;
 
   auto add_tokens(std::vector<token::UniqueTokenPointer> args) {
     try {
@@ -105,7 +108,7 @@ namespace risp_eval {
     return function(std::move(resolved_tokens));
   }
   
-  std::map<std::string, LibraryFunc> Library = {
+  StandardLibrary Library = {
     {"+", [](auto args) {
 	return resolve_token_list_then_apply(std::move(args), add_tokens);
       }},
@@ -125,28 +128,34 @@ namespace risp_eval {
 	}}
   };
 
-  auto eval_token_list(token::UniqueTokenPointer token_list) {
-    auto op = std::move(token_list->list[0]);
+  auto eval_token_list(token::UniqueTokenPointer token_list, scope::UniqueScopePointer scope) {
+    auto first_token = std::move(token_list->list[0]);
     token_list->list.erase(token_list->list.begin());
-    if (op->type == token::TokenType::IDENTIFIER) {
-      return Library.find(op->value)->second(std::move(token_list));
+    if (first_token->type == token::TokenType::IDENTIFIER) {
+      const auto library_function = Library.find(first_token->value);
+      if (library_function != Library.end()) {
+	return library_function->second(std::move(token_list));
+      }
+      auto scope_variable = scope::search_scope(scope, first_token->value);
+      std::cout << scope_variable->value << std::endl;
+      return scope_variable;
     }
-    return op;
+    return first_token;
   }
 
-  auto eval_token_general(token::UniqueTokenPointer token) {
+  auto eval_token_general(token::UniqueTokenPointer token,  scope::UniqueScopePointer scope) {
     return token;
   }
 
   token::UniqueTokenPointer eval(token::UniqueTokenPointer token) {
     switch(token->type) {
     case token::TokenType::LIST:
-      return eval_token_list(std::move(token));
+      return eval_token_list(std::move(token), scope::create_scope());
     case token::TokenType::INTEGER:
     case token::TokenType::FLOAT:
     case token::TokenType::STRING:
     case token::TokenType::IDENTIFIER:
-      return eval_token_general(std::move(token));
+      return eval_token_general(std::move(token), scope::create_scope());
     }
   }
 }

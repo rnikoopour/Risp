@@ -31,9 +31,9 @@ namespace token {
   auto create_token(const T& value) {
     return std::make_unique<token::Token>(value);
   }
+  //TODO: UniqueTokenPointer -> TokenPointerUnique
   typedef std::unique_ptr<token::Token> UniqueTokenPointer;
+  typedef std::shared_ptr<token::Token> TokenPointerShared;
   void print_token(const UniqueTokenPointer& token);
-
-
 }
 #endif
