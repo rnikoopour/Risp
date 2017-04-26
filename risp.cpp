@@ -22,7 +22,8 @@ auto read() {
 
 auto eval(const std::string& input) {
   auto parsed_tokens = parser::parse(input);
-  token::print_token(risp_eval::eval(std::move(parsed_tokens)));
+  auto result = risp_eval::eval(std::move(parsed_tokens));
+  token::print_token(result);
 }
 
 int main(int argc, char* argv[]) {

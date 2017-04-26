@@ -22,11 +22,11 @@ namespace token {
     {TokenType::LAMBDA, "LAMBDA"}
   };
 
-  auto get_type(const std::unique_ptr<token::Token>& token) {
+  auto get_type(const UniqueTokenPointer& token) {
     return token::token_types.find(token->type)->second;
   }
 
-  void print_token(const std::unique_ptr<Token>& token) {
+  void print_token(const UniqueTokenPointer& token) {
     if (token->is_list) {
       std::cout << "New list:\n";
       std::for_each(begin(token->list), end(token->list),
