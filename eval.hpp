@@ -12,6 +12,6 @@
 #include "token.hpp"
 
 namespace risp_eval {
-  token::UniqueTokenPointer eval(token::UniqueTokenPointer&& token);
+  token::UniqueTokenPointer eval(token::UniqueTokenPointer token);
 }
 #endif
