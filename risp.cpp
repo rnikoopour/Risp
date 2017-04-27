@@ -23,7 +23,7 @@ auto read() {
 auto eval(const std::string& input) {
   auto parsed_tokens = parser::parse(input);
   auto result = risp_eval::eval(std::move(parsed_tokens));
-  token::print_token(result);
+  return result;
 }
 
 int main(int argc, char* argv[]) {
@@ -35,7 +35,8 @@ int main(int argc, char* argv[]) {
   while(true) {
     auto input = read();
     if (input.should_exit) break;
-    eval(input.input);
+    auto result = eval(input.input);
+    token::print_token(result);
     linenoise::AddHistory(input.input.c_str());
   }
 }

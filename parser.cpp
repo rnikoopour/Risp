@@ -12,11 +12,12 @@ namespace parser {
     return std::regex_replace(input, parens_regex, " $& ");
   }
 
+
   auto tokenize(const std::string& input) {
     return std::stringstream(normalize(input));
   }
 
-  std::unique_ptr<token::Token> parse_tokens(std::stringstream& tokens) {
+  token::UniqueTokenPointer parse_tokens(std::stringstream& tokens) {
     std::string token_str;
     auto token_list = token::create_token(TOKEN_LIST);
     tokens >> token_str;
@@ -53,11 +54,20 @@ namespace parser {
       return token_list;
     }
   }
+
+  token::UniqueTokenPointer parse(const std::string& input) {
+    auto tokens = tokenize(input);
+    auto parsed_tokens = parse_tokens(tokens);
+    return parsed_tokens;
+  }
+
+  namespace test {
+    std::string normalize(const std::string& input) {
+      return parser::normalize(input);
+    }
+  }
+
+
 }
 
-std::unique_ptr<token::Token> parser::parse(const std::string& input) {
-  auto tokens = tokenize(input);
-  auto parsed_tokens = parse_tokens(tokens);
-  return parsed_tokens;
-}
 #endif

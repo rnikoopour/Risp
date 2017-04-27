@@ -9,6 +9,9 @@
 #include "token.hpp"
 
 namespace parser {
-  std::unique_ptr<token::Token> parse(const std::string& input);
+  token::UniqueTokenPointer parse(const std::string& input);
+  namespace test {
+    std::string normalize(const std::string& input);
+  }
 }
 #endif
