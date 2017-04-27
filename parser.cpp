@@ -38,35 +38,44 @@ namespace parser {
       }
       // We only get here if there is an missing )
       //  otherwise this code doesn't execute
-      std::cout << "Missing \")\": " << tokens.str() << "\"\n";
-      // Can't return token_list because it may
+      //  Can't return token_list because it may
       //  have been modified
       return token::create_token("Missing \")\": " + tokens.str());
     } else {
-      if (tokens >> token_str) {
-	std::cout << "S-expression require (): \"" << tokens.str() << "\"\n";
-	return token::create_token("S-expression require (): \"" + tokens.str());
-      } else {
+      // Hack to ignore the whitespace at the very end added
+      //  by the regex_replace
+      if (token_str != "")
 	token_list->list.push_back(token::create_token(token_str));
-      }
-      // Can safely return token_list because it will
-      //  either be empty of have one token it
-      return token_list;
     }
+    // Can safely return token_list because it will
+    //  either be empty of have one token it
+    return token_list;
   }
 
   token::UniqueTokenPointer parse(const std::string& input) {
     auto tokens = tokenize(input);
-    auto parsed_tokens = parse_tokens(tokens);
-    return parsed_tokens;
+    auto result = token::create_token(TOKEN_LIST);
+    while (!tokens.eof()) {
+      auto parsed_tokens = parse_tokens(tokens);
+      // If there isn't anything in the list, it's an empty
+      //  token and we don't need to include it
+      if (parsed_tokens->list.size()) 
+	result->list.push_back(std::move(parsed_tokens));
+    }
+    return result;
   }
 
   namespace test {
     std::string normalize(const std::string& input) {
       return parser::normalize(input);
     }
+    std::stringstream tokenize(const std::string& input) {
+      return parser::tokenize(input);
+    }
+    token::UniqueTokenPointer parse_tokens(std::stringstream& tokens) {
+      return parser::parse_tokens(tokens);
+    }
   }
-
 
 }
 

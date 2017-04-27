@@ -2,13 +2,14 @@ CC = /usr/bin/clang++
 FLAGS = -std=c++1z -Wall -pedantic
 GENERAL_DEPS = token.o scope.o parser.o eval.o
 RISP_DEPS = $(GENERAL_DEPS) risp.o
+RISP_OBJS = $(GENERAL_DEPS) risp.o
 TESTS_DEPS =  $(GENERAL_DEPS) tests-token.o tests-parser.o tests-main.o
 TESTS_OBJS =  $(GENERAL_DEPS) test/tests-token.o test/tests-parser.o test/tests-main.o
 
 all : risp tests
 
 risp : $(RISP_DEPS)
-	$(CC) $(FLAGS) $(RISP_DEPS) -o risp 
+	$(CC) $(FLAGS) $(RISP_OBJS) -o risp 
 
 token.o : token.cpp token.hpp
 	$(CC) $(FLAGS) -c token.cpp 

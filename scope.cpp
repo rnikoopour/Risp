@@ -14,6 +14,7 @@ namespace scope {
     if (search_result != scope->current.end()) {
       return token::create_token(search_result->second->value);
     }
+    std::cout << "SYMBOL: " << symbol << std::endl;
     return token::create_token("Symbol not found");
   }
 }

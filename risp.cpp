@@ -22,7 +22,13 @@ auto read() {
 
 auto eval(const std::string& input) {
   auto parsed_tokens = parser::parse(input);
-  auto result = risp_eval::eval(std::move(parsed_tokens));
+  auto result = std::accumulate(std::begin(parsed_tokens->list), std::end(parsed_tokens->list),
+				token::create_token("EMPTY PARSED TOKENS"),
+				[](auto& acc, auto& token) {
+				  auto result = risp_eval::eval(std::move(token));
+				  token::print_token(result);
+				  return result;
+				});
   return result;
 }
 
@@ -36,7 +42,6 @@ int main(int argc, char* argv[]) {
     auto input = read();
     if (input.should_exit) break;
     auto result = eval(input.input);
-    token::print_token(result);
     linenoise::AddHistory(input.input.c_str());
   }
 }
