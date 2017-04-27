@@ -1,20 +1,38 @@
+CC = clang++
+FLAGS = -std=c++1z -Wall -pedantic
+OBJS = token.o scope.o parser.o eval.o risp.o
+TEST_OBJS = test/tests-main.o test/tests-token.o
+
+all: risp tests
+default: risp
+test: tests
+
 risp: token.o scope.o parser.o eval.o risp.o
-	clang++ -std=c++1z -o risp token.o scope.o parser.o eval.o risp.o
+	$(CC) $(FLAGS) $(OBJS) -o risp 
 
 token.o: token.cpp token.hpp
-	clang++ -std=c++1z -Wall -pedantic -c token.cpp 
+	$(CC) $(FLAGS) -c token.cpp 
 
 scope.o: scope.cpp scope.hpp
-	clang++ -std=c++1z -Wall -pedantic -c scope.cpp 
+	$(CC) $(FLAGS) -c scope.cpp 
 
 parser.o: parser.cpp parser.hpp token.hpp
-	clang++ -std=c++1z -Wall -pedantic -c parser.cpp
+	$(CC) $(FLAGS) -c parser.cpp
 
 eval.o: eval.cpp eval.hpp token.hpp
-	clang++ -std=c++1z -Wall -pedantic -c eval.cpp
+	$(CC) $(FLAGS) -c eval.cpp
 
 risp.o: risp.cpp token.hpp parser.hpp
-	clang++ -std=c++1z -Wall -pedantic -c risp.cpp 
+	$(CC) $(FLAGS) -c risp.cpp 
+
+tests-main.o: test/tests-main.cpp
+	$(CC) $(FLAGS) -o test/tests-main.o -c test/tests-main.cpp
+
+tests-token.o: test/tests-token.cpp
+	$(CC) $(FLAGS) -o test/tests-token.o -c test/tests-token.cpp
+
+tests: test/tests-main.o test/tests-token.o
+	$(CC) $(FLAGS) $(TEST_OBJS) -o test/tests
 
 clean:
-	rm -rf risp *.o
+	rm -rf risp test/tests *.o test/*.o
