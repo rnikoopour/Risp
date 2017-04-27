@@ -41,7 +41,7 @@ SCENARIO("token::disover_type discovers token types properly") {
 SCENARIO("token::Token constructs properly") {
   GIVEN("constructor is called with a std::string") {
     THEN("a token should be constructed properly") {
-      auto token = std::make_unique<token::Token>(std::string("foo"));
+      auto token = new token::Token(std::string("foo"));
       CHECK(token->value == "foo");
       CHECK(token->is_list == false);
       CHECK(token->type == token::TokenType::IDENTIFIER);
@@ -50,7 +50,7 @@ SCENARIO("token::Token constructs properly") {
   }
   GIVEN("constructor is called with a char*") {
     THEN("a token should be constructed properly") {
-      auto token = std::make_unique<token::Token>("foo");
+      auto token = new token::Token("foo");
       CHECK(token->value == "foo");
       CHECK(token->is_list == false);
       CHECK(token->type == token::TokenType::IDENTIFIER);
@@ -60,7 +60,38 @@ SCENARIO("token::Token constructs properly") {
 
   GIVEN("constructor is called with true") {
     THEN("a token should be constructed properly") {
-      auto token = std::make_unique<token::Token>(true);
+      auto token = new token::Token(true);
+      CHECK(token->value == "__RISP_THIS_SHOULD_NEVER_PRINT__");
+      CHECK(token->is_list == true);
+      CHECK(token->type == token::TokenType::LIST);
+      CHECK(token->list.size() == 0);
+    }
+  }
+}
+
+SCENARIO("token::create_token works properly") {
+   GIVEN("token::create_token is called with a std::string") {
+    THEN("a token should be created properly") {
+      auto token = token::create_token(std::string("foo"));
+      CHECK(token->value == "foo");
+      CHECK(token->is_list == false);
+      CHECK(token->type == token::TokenType::IDENTIFIER);
+      CHECK(token->list.size() == 0);
+    }
+  }
+  GIVEN("token::create_token is called with a char*") {
+    THEN("a token should be created properly") {
+      auto token = token::create_token("foo");
+      CHECK(token->value == "foo");
+      CHECK(token->is_list == false);
+      CHECK(token->type == token::TokenType::IDENTIFIER);
+      CHECK(token->list.size() == 0);
+    }
+  }
+
+  GIVEN("token::create_token is called with true") {
+    THEN("a token should be created properly") {
+      auto token = token::create_token(true);
       CHECK(token->value == "__RISP_THIS_SHOULD_NEVER_PRINT__");
       CHECK(token->is_list == true);
       CHECK(token->type == token::TokenType::LIST);
