@@ -4,7 +4,7 @@
 #include "token.hpp"
 
 namespace token {
-  Token::Token(const std::string val) : value(val), type(discover_type(val)) {};
+  Token::Token(const std::string value) : value(value), type(discover_type(value)) {};
   Token::Token(const char* val) : value(std::string(val)), type(discover_type(val)) {};
   Token::Token(const bool is_a_list) : is_list(is_a_list), type(TokenType::LIST) {/*std::cout << "list\n";*/};
   Token::~Token() { /*std::cout << "deleted\n";*/ };
