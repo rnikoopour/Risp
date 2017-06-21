@@ -42,11 +42,6 @@ SCENARIO("parse_tokens creates tokens properly") {
     }
   }
   GIVEN("input is foo") {
-    /* 
-     * Need to revisit this test. something
-     *  is incorrect with the overall behavior.
-     *  For now, this is treated as expected behavior
-     */
     THEN("output should be a token list with identifier foo") {
       const auto expression = "foo";
       auto tokens = parser::test::tokenize(expression);
@@ -54,4 +49,13 @@ SCENARIO("parse_tokens creates tokens properly") {
       CHECK(result->list.size() == 1);
     }
   }
+  GIVEN("input is foo") {
+    THEN("output should be a token list with identifier foo") {
+      const auto expression = "foo";
+      auto tokens = parser::test::tokenize(expression);
+      auto result = parser::test::parse_tokens(tokens);
+      CHECK(result->list.size() == 1);
+    }
+  }
+
 }
