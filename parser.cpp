@@ -36,8 +36,7 @@ namespace parser {
 	if (close_paren_found)
 	  return token_list;
       }
-      // We only get here if there is an missing )
-      //  otherwise this code doesn't execute
+      // We only get here if there is an missing ')'
       //  Can't return token_list because it may
       //  have been modified
       return token::create_token("Missing \")\": " + tokens.str());
@@ -46,10 +45,8 @@ namespace parser {
       //  by the regex_replace
       if (token_str != "")
 	token_list->list.push_back(token::create_token(token_str));
+      return token_list;
     }
-    // Can safely return token_list because it will
-    //  either be empty of have one token it
-    return token_list;
   }
 
   token::UniqueTokenPointer parse(const std::string& input) {
@@ -58,7 +55,7 @@ namespace parser {
     while (!tokens.eof()) {
       auto parsed_tokens = parse_tokens(tokens);
       // If there isn't anything in the list, it's an empty
-      //  token and we don't need to include it
+      //  token and we don't need it
       if (parsed_tokens->list.size()) 
 	result->list.push_back(std::move(parsed_tokens));
     }
